@@ -1,3 +1,4 @@
+CREATE EXTENSION IF NOT EXISTS vector;
 -- CreateTable
 CREATE TABLE "Class" (
     "id" SERIAL NOT NULL,
