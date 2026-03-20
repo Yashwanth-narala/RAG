@@ -1,27 +1,19 @@
 import { prisma } from "../src/lib/prisma"
 import "dotenv/config"
+
 async function main() {
 
-  const classes = ["Class 8", "Class 9", "Class 10"]
+  const classes = ["Class 9", "Class 10"]
 
   const subjects = [
     "Mathematics",
-    "Physics",
-    "Chemistry",
-    "Biology"
+    "Physics"
   ]
 
   const chapters = [
     "Introduction",
-    "Fundamentals",
     "Core Concepts",
-    "Applications",
-    "Examples",
-    "Practice",
-    "Advanced Concepts",
-    "Problem Solving",
-    "Summary",
-    "Assessment"
+    "Applications"
   ]
 
   const baseParagraph = `
@@ -32,28 +24,11 @@ async function main() {
   a strong conceptual foundation.
 
   Examples are included to demonstrate how theoretical ideas are
-  applied in real situations. When students analyze examples they
-  understand patterns and relationships between ideas. This
-  improves their analytical thinking.
-
-  Practice exercises reinforce understanding. By solving
-  problems students gain confidence and develop problem solving
-  ability. This approach helps learners move from basic
-  understanding to deeper mastery of the topic.
-
-  Real-world applications highlight why the concept is important.
-  Many scientific and mathematical ideas are used in engineering,
-  technology, and everyday life. Connecting theory with
-  applications makes learning more meaningful.
-
-  These explanations aim to provide clarity, encourage curiosity,
-  and prepare students for advanced topics. Strong foundations
-  help learners succeed in examinations as well as practical
-  problem solving.
+  applied in real situations. Practice exercises reinforce
+  understanding and improve analytical thinking.
   `
 
-  // repeat paragraph to reach ~600 words
-  const pageContent = baseParagraph.repeat(4)
+  const pageContent = baseParagraph.repeat(2)
 
   for (const className of classes) {
 
@@ -79,8 +54,8 @@ async function main() {
           }
         })
 
-        // each chapter has 5 pages
-        for (let i = 1; i <= 5; i++) {
+        // Only 2 pages per chapter
+        for (let i = 1; i <= 2; i++) {
 
           await prisma.page.create({
             data: {
@@ -98,7 +73,7 @@ async function main() {
 
   }
 
-  console.log("Education dataset seeded successfully")
+  console.log("Small education dataset seeded successfully")
 
 }
 

@@ -1,20 +1,33 @@
 export function chunkText(text: string, chunkSize = 150, overlap = 30) {
 
-  const words = text.split(/\s+/)
+  const sentences = text.match(/[^.!?]+[.!?]+/g) || [text]
 
   const chunks: string[] = []
 
-  let start = 0
+  let currentChunk: string[] = []
+  let wordCount = 0
 
-  while (start < words.length) {
+  for (const sentence of sentences) {
 
-    const end = start + chunkSize
+    const words = sentence.trim().split(/\s+/)
+    wordCount += words.length
+    currentChunk.push(sentence)
 
-    const chunk = words.slice(start, end).join(" ")
+    if (wordCount >= chunkSize) {
 
-    chunks.push(chunk)
+      chunks.push(currentChunk.join(" ").trim())
 
-    start += chunkSize - overlap
+      const overlapWords = currentChunk.join(" ")
+        .split(/\s+/)
+        .slice(-overlap)
+
+      currentChunk = [overlapWords.join(" ")]
+      wordCount = overlapWords.length
+    }
+  }
+
+  if (currentChunk.length) {
+    chunks.push(currentChunk.join(" ").trim())
   }
 
   return chunks

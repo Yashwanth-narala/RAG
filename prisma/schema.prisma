@@ -90,4 +90,19 @@ model PageChunk {
   @@index([chapter_id])
   @@index([subject_id])
   @@index([class_id])
+} 
+
+//////////////////////////////////////////////////
+// SEMANTIC CACHE (FOR RAG ANSWERS)
+//////////////////////////////////////////////////
+
+model SemanticCache {
+  id         Int      @id @default(autoincrement())
+
+  question   String
+  answer     String
+
+  embedding  Unsupported("vector(1536)")
+
+  created_at DateTime @default(now())
 }

@@ -16,28 +16,35 @@ export async function searchChunks(
   subjectId: number,
   chapterId: number
 ) {
-  
-   console.time("embedding_generation")
+
+  console.time("embedding_generation")
   const embedding = await generateEmbedding(query)
-    console.timeEnd("embedding_generation")
+  console.timeEnd("embedding_generation")
+
   const vector = `[${embedding.join(",")}]`
-   console.time("vector_search")
-  const results = await prisma.$queryRaw<ChunkResult[]>`
+
+  // ✅ Set HNSW search parameter here
+  await prisma.$executeRawUnsafe(`SET hnsw.ef_search = 50`)
+
+  console.time("vector_search")
+
+  const results = await prisma.$queryRawUnsafe<ChunkResult[]>(`
     SELECT
       page_id,
       chapter_id,
       subject_id,
       class_id,
       chunk_text,
-      embedding <=> ${vector}::vector AS distance
+      embedding <=> '${vector}'::vector AS distance
     FROM "PageChunk"
     WHERE class_id = ${classId}
       AND subject_id = ${subjectId}
       AND chapter_id = ${chapterId}
-     AND embedding <=> ${vector}::vector < 0.5
-    ORDER BY embedding <=> ${vector}::vector
+    ORDER BY embedding <=> '${vector}'::vector
     LIMIT 5
-  `
-   console.timeEnd("vector_search")
+  `)
+
+  console.timeEnd("vector_search")
+
   return results
 }

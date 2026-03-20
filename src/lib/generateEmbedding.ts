@@ -1,3 +1,5 @@
+
+import "dotenv/config"
 import OpenAI from "openai"
 import { addTokens } from "./tokenTracker"
 const openai = new OpenAI({
