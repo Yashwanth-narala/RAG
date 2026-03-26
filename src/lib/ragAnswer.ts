@@ -57,7 +57,7 @@ export async function generateAnswer(
 
   const response = await openai.chat.completions.create({
     model: "gpt-4o-mini",
-    max_tokens: 150,
+    max_tokens: 100,
     messages: [
       {
         role: "system",

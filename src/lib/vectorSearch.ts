@@ -41,7 +41,7 @@ export async function searchChunks(
       AND subject_id = ${subjectId}
       AND chapter_id = ${chapterId}
     ORDER BY embedding <=> '${vector}'::vector
-    LIMIT 5
+    LIMIT 20
   `)
 
   console.timeEnd("vector_search")
