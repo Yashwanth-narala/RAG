@@ -3,7 +3,7 @@ import { generateAnswer } from "../src/lib/ragAnswer"
 async function main() {
 
   const result = await generateAnswer(
-    " Explain fundamental concepts",
+    "Explain this concept.",
     1,
     1,
     1

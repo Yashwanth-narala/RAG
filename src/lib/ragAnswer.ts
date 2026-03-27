@@ -1,8 +1,9 @@
 import OpenAI from "openai"
-import { searchChunks } from "./vectorSearch"
+import { hybridSearch } from "./hybridSearch"
 import { rerankChunks } from "./rerankChunks"
 import { addTokens, getTotalTokens, resetTokens } from "./tokenTracker"
 import { getCachedAnswer, storeCachedAnswer } from "./semanticCache"
+import { rewriteQuery } from "./queryRewrite"
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -31,9 +32,19 @@ export async function generateAnswer(
   ////////////////////////////////////////////////
   // STEP 2 — RETRIEVE
   ////////////////////////////////////////////////
+  
+console.time("query_rewrite") 
+ // checking the length of the qsn before rewriting
+const rewrittenQuery =
+  question.length < 20
+    ? await rewriteQuery(question)
+    : question;
+console.timeEnd("query_rewrite")
+console.log("Original:", question)
+console.log("Rewritten:", rewrittenQuery) 
 
-  const chunks = await searchChunks(
-    question,
+  const chunks = await hybridSearch(
+    rewrittenQuery,
     classId,
     subjectId,
     chapterId
@@ -64,12 +75,15 @@ export async function generateAnswer(
         content: `
 You are an educational tutor.
 
-Use ONLY the provided context.
+Answer the question using the context below.
+If the answer is partially available, provide the best possible answer.
+
 
 Rules:
-- No repetition
-- Clear structured answer
-- If not found → say "Not found in context"
+- If answer is clearly present → answer accurately
+- If partially present → explain using available info
+- If unclear → try to give a helpful explanation based on context
+- ONLY say "Not found" if completely unrelated
 `
       },
       {

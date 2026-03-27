@@ -1,6 +1,6 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
-from sentence_transformers import CrossEncoder
+from fastapi import FastAPI # type: ignore
+from pydantic import BaseModel # type: ignore
+from sentence_transformers import CrossEncoder # type: ignore
 
 app = FastAPI()
 
