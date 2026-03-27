@@ -6,103 +6,67 @@ datasource db {
   provider = "postgresql"
 }
 
-//////////////////////////////////////////////////
-// CLASS
-//////////////////////////////////////////////////
-
 model Class {
-  id        Int       @id @default(autoincrement())
-  name      String
-
-  subjects  Subject[]
+  id       Int       @id @default(autoincrement())
+  name     String
+  subjects Subject[]
 }
 
-//////////////////////////////////////////////////
-// SUBJECT
-//////////////////////////////////////////////////
-
 model Subject {
-  id        Int      @id @default(autoincrement())
-  name      String
-
-  class_id  Int
-  class     Class    @relation(fields: [class_id], references: [id], onDelete: Cascade)
-
-  chapters  Chapter[]
+  id       Int       @id @default(autoincrement())
+  name     String
+  class_id Int
+  chapters Chapter[]
+  class    Class     @relation(fields: [class_id], references: [id], onDelete: Cascade)
 
   @@index([class_id])
 }
 
-//////////////////////////////////////////////////
-// CHAPTER
-//////////////////////////////////////////////////
-
 model Chapter {
-  id          Int      @id @default(autoincrement())
-  title       String
-
-  subject_id  Int
-  subject     Subject  @relation(fields: [subject_id], references: [id], onDelete: Cascade)
-
-  pages       Page[]
+  id         Int     @id @default(autoincrement())
+  title      String
+  subject_id Int
+  subject    Subject @relation(fields: [subject_id], references: [id], onDelete: Cascade)
+  pages      Page[]
 
   @@index([subject_id])
 }
 
-//////////////////////////////////////////////////
-// PAGE
-//////////////////////////////////////////////////
-
 model Page {
-  id           Int      @id @default(autoincrement())
-
+  id           Int         @id @default(autoincrement())
   chapter_id   Int
   page_order   Int
-
   content_text String
-
-  chapter      Chapter  @relation(fields: [chapter_id], references: [id], onDelete: Cascade)
-
+  chapter      Chapter     @relation(fields: [chapter_id], references: [id], onDelete: Cascade)
   chunks       PageChunk[]
 
   @@index([chapter_id])
 }
 
-//////////////////////////////////////////////////
-// PAGE CHUNKS (VECTOR TABLE)
-//////////////////////////////////////////////////
-
 model PageChunk {
-  id          Int      @id @default(autoincrement())
-
-  page_id     Int
-  chapter_id  Int
-  subject_id  Int
-  class_id    Int
-
-  chunk_text  String
-
-  embedding   Unsupported("vector(1536)")
-
-  page        Page     @relation(fields: [page_id], references: [id], onDelete: Cascade)
+  id         Int                      @id @default(autoincrement())
+  page_id    Int
+  chapter_id Int
+  subject_id Int
+  class_id   Int
+  chunk_text String
+  embedding  Unsupported("vector")
+  textsearch Unsupported("tsvector")? @default(dbgenerated("to_tsvector('english'::regconfig, chunk_text)"))
+  page       Page                     @relation(fields: [page_id], references: [id], onDelete: Cascade)
 
   @@index([page_id])
   @@index([chapter_id])
   @@index([subject_id])
   @@index([class_id])
-} 
-
-//////////////////////////////////////////////////
-// SEMANTIC CACHE (FOR RAG ANSWERS)
-//////////////////////////////////////////////////
+  @@index([textsearch], map: "idx_textsearch", type: Gin)
+}
 
 model SemanticCache {
-  id         Int      @id @default(autoincrement())
-
+  id         Int                   @id @default(autoincrement())
   question   String
   answer     String
+  embedding  Unsupported("vector")
+  created_at DateTime              @default(now())
 
-  embedding  Unsupported("vector(1536)")
-
-  created_at DateTime @default(now())
+  @@index([embedding], map: "semantic_cache_embedding_idx")
 }
