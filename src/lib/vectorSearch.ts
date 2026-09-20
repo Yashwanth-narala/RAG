@@ -23,7 +23,7 @@ export async function searchChunks(
 
   const vector = `[${embedding.join(",")}]`
 
-  // ✅ Set HNSW search parameter here
+  //  Set HNSW search parameter here
   await prisma.$executeRawUnsafe(`SET hnsw.ef_search = 50`)
 
   console.time("vector_search")

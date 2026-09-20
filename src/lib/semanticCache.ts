@@ -7,9 +7,8 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 })
 
-//////////////////////////////////////////////////
+
 // EMBEDDING
-//////////////////////////////////////////////////
 
 async function embed(text: string) {
   const res = await openai.embeddings.create({
@@ -19,25 +18,20 @@ async function embed(text: string) {
   return res.data[0].embedding
 }
 
-//////////////////////////////////////////////////
 // NORMALIZE
-//////////////////////////////////////////////////
 
 function normalize(q: string) {
   return q.trim().toLowerCase()
 }
 
-//////////////////////////////////////////////////
+
 // GET CACHE
-//////////////////////////////////////////////////
 
 export async function getCachedAnswer(question: string) {
 
   const normalized = normalize(question)
 
-  ////////////////////////////////////////////////
   // 1️⃣ REDIS CACHE
-  ////////////////////////////////////////////////
 
   const redisCached = await redis.get(`rag:${normalized}`)
 
@@ -52,20 +46,18 @@ export async function getCachedAnswer(question: string) {
         tokens_used: 0,
         cost_estimate: 0
       },
-      embedding: null // 🔥 IMPORTANT
+      embedding: null //  IMPORTANT
     }
   }
 
-  ////////////////////////////////////////////////
+  
   // 2️⃣ EMBEDDING (ONLY ONCE)
-  ////////////////////////////////////////////////
 
   const embedding = await embed(question)
   const vector = `[${embedding.join(",")}]`
 
-  ////////////////////////////////////////////////
+ 
   // 3️⃣ SEMANTIC CACHE (TOP 5)
-  ////////////////////////////////////////////////
 
   const results: any[] = await prisma.$queryRaw(
     Prisma.sql`
@@ -81,9 +73,8 @@ export async function getCachedAnswer(question: string) {
     return { cache: null, embedding }
   }
 
-  ////////////////////////////////////////////////
+
   // 4️⃣ FIND BEST MATCH
-  ////////////////////////////////////////////////
 
   const best = results.find(r => r.distance < 0.5)
 
@@ -98,9 +89,7 @@ export async function getCachedAnswer(question: string) {
       cost_estimate: 0
     }
 
-    ////////////////////////////////////////////////
     // Warm Redis
-    ////////////////////////////////////////////////
 
     await redis.set(
       `rag:${normalized}`,
@@ -115,9 +104,7 @@ export async function getCachedAnswer(question: string) {
   return { cache: null, embedding }
 }
 
-//////////////////////////////////////////////////
 // STORE CACHE
-//////////////////////////////////////////////////
 
 export async function storeCachedAnswer(
   question: string,
@@ -132,9 +119,7 @@ export async function storeCachedAnswer(
     references: answer.references
   }
 
-  ////////////////////////////////////////////////
   // 1️⃣ STORE REDIS
-  ////////////////////////////////////////////////
 
   await redis.set(
     `rag:${normalized}`,
@@ -143,9 +128,7 @@ export async function storeCachedAnswer(
     86400
   )
 
-  ////////////////////////////////////////////////
   // 2️⃣ ENSURE EMBEDDING EXISTS
-  ////////////////////////////////////////////////
 
   let finalEmbedding = embedding
 
@@ -155,9 +138,7 @@ export async function storeCachedAnswer(
 
   const vector = `[${finalEmbedding.join(",")}]`
 
-  ////////////////////////////////////////////////
   // 3️⃣ STORE IN PGVECTOR
-  ////////////////////////////////////////////////
 
   await prisma.$executeRaw(
     Prisma.sql`
